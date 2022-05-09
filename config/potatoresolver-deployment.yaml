@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: potatoresolver
+  namespace: tekton-remote-resolution
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: potatoresolver
+  template:
+    metadata:
+      labels:
+        app: potatoresolver
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: potatoresolver
+              topologyKey: kubernetes.io/hostname
+            weight: 100
+      # Using a different serviceaccount from other resolvers to give
+      # access to a private namespace full of tasks and pipelines to be
+      # shared with the entire cluster.
+      serviceAccountName: clusterresolver
+      containers:
+      - name: controller
+        image: ko://github.com/vdemeester/potato-resolver/cmd/potatoresolver
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 1000m
+            memory: 1000Mi
+        ports:
+        - name: metrics
+          containerPort: 9090
+        env:
+        - name: SYSTEM_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: CONFIG_LOGGING_NAME
+          value: config-logging
+        - name: CONFIG_OBSERVABILITY_NAME
+          value: config-observability
+        - name: METRICS_DOMAIN
+          value: tekton.dev/resolution
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          capabilities:
+            drop:
+            - all
