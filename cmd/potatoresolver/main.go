@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	// "strconv"
 	"strings"
 
 	"github.com/tektoncd/resolution/pkg/common"
@@ -49,24 +50,69 @@ func (r *resolver) GetSelector(context.Context) map[string]string {
 // Only "kind" and "name" are needed.
 func (r *resolver) ValidateParams(ctx context.Context, params map[string]string) error {
 	if len(params) == 0 {
-		return errors.New(`require "kind" and "name" params`)
+		return errors.New(`require at least "type" param`)
 	}
-	kind, hasKind := params["kind"]
-	if !hasKind {
-		return errors.New(`require "kind" param`)
+	t, hasType := params["type"]
+	if !hasType {
+		return errors.New(`require "type" param`)
 	}
-	kind = strings.TrimSpace(strings.ToLower(kind))
-	if kind != "task" && kind != "pipeline" {
-		return fmt.Errorf("unrecognized kind %q, only task and pipeline are supported", kind)
-	}
-	if _, has := params["name"]; !has {
-		return errors.New(`require "name" param`)
+	t = strings.TrimSpace(strings.ToLower(t))
+	// FIXME change this
+	if t != "dockerfile" {
+		return fmt.Errorf("unrecognized type %q, only dockerfile is supported", t)
 	}
 	return nil
 }
 
 // Resolve uses the given params to resolve the requested file or resource.
 func (r *resolver) Resolve(ctx context.Context, params map[string]string) (framework.ResolvedResource, error) {
+	t := params["type"]
+	switch t {
+	case "dockerfile":
+		// imagebuilder := params["imagebuilder"]
+		// scan, err := strconv.ParseBool(params["scan"])
+		// if err != nil {
+		// return nil, err
+		// }
+		return &resolvedResource{
+			data: []byte(`---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+spec:
+  workspaces:
+  - name: shared-workspace
+  - name: sslcertdir
+    optional: true
+  tasks:
+  - name: fetch-repository
+    taskRef:
+      name: git-clone
+    workspaces:
+    - name: output
+      workspace: shared-workspace
+    params:
+    - name: url
+      value: https://github.com/kelseyhightower/nocode
+    - name: subdirectory
+      value: ""
+    - name: deleteExisting
+      value: "true"
+  - name: buildah
+    taskRef:
+      name: buildah
+    runAfter:
+    - fetch-repository
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+    - name: sslcertdir
+      workspace: sslcertdir
+    params:
+    - name: IMAGE
+      value: registry:5000/nocode
+`),
+		}, nil
+	}
 	return nil, fmt.Errorf("not implemented yet")
 }
 

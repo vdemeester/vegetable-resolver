@@ -1,0 +1,11 @@
+apiVersion: resolution.tekton.dev/v1alpha1
+kind: ResolutionRequest
+metadata:
+  name: fetch-potatoes
+  labels:
+    resolution.tekton.dev/type: potato
+spec:
+  params:
+    type: dockerfile
+    imagebuilder: buildah
+    scan: "true"
