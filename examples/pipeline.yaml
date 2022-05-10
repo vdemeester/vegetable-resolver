@@ -1,0 +1,40 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: image-pipeline
+  annotations:
+    # Default builder to use is kaniko
+    default.potato.tekton.dev/builder: kaniko
+spec:
+  workspaces:
+  - name: shared-workspace
+  tasks:
+  - name: checkout
+    params:
+    - name: url
+      value: https://github.com/vdemeester/go-helloworld-app
+    taskRef:
+      name: git-clone
+    workspaces:
+    - name: output
+      workspace: shared-workspace
+  - name: build-and-push
+    taskRef:
+      # Any Task that fulfil the "builder" contract
+      name: "potato.type.builder"
+    params:
+    - name: IMAGE
+      value: quay.io/vdemeest/foo:bar
+    workspaces:
+    - name: source
+      workspace: shared-workspace
+  - name: scan
+    params:
+    - name: image
+      value: $(tasks.build-and-push.results.IMAGE_URL)
+    - name: rox_central_endpoint
+      value: rox.stackrox.io:443
+    - name: rox_api_token
+      value: foo
+    taskRef:
+      name: stackrox-image-scan

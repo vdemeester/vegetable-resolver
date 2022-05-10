@@ -25,7 +25,7 @@ spec:
       # Using a different serviceaccount from other resolvers to give
       # access to a private namespace full of tasks and pipelines to be
       # shared with the entire cluster.
-      serviceAccountName: clusterresolver
+      serviceAccountName: potato-resolver-controller
       containers:
       - name: controller
         image: ko://github.com/vdemeester/potato-resolver/cmd/potatoresolver

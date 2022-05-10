@@ -1,0 +1,43 @@
+# Relying on the default build
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: build-me-an-image
+spec:
+  pipelineRef:
+    resolver: potato
+    resource:
+    - name: pipeline
+      value: image-pipeline
+  workspaces:
+    - name: shared-workspace
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 3Gi
+---
+# Or specifying our own
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: build-me-an-image
+spec:
+  pipelineRef:
+    resolver: potato
+    resource:
+    - name: pipeline
+      value: image-pipeline
+    - name: builder
+      value: buildah
+  workspaces:
+    - name: shared-workspace
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 3Gi
