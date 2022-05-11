@@ -5,6 +5,7 @@ metadata:
   labels:
     app.kubernetes.io/version: "0.1"
   annotations:
+    potato.tekton.dev/type: scan
     tekton.dev/tags: security
     tekton.dev/categories: Security
     tekton.dev/displayName: "Scan an image with StackRox/RHACS"
@@ -18,6 +19,10 @@ spec:
     It's a companion to the stackrox-image-check task,
     which checks an image against build-time policies.
   params:
+    - name: IMAGE
+      type: string
+      description: |
+        Full name of image to scan (example -- gcr.io/rox/sample:5.0-rc1)
     - name: rox_central_endpoint
       type: string
       description: |
@@ -26,10 +31,6 @@ spec:
     - name: rox_api_token
       type: string
       description: Secret containing the StackRox API token with CI permissions
-    - name: image
-      type: string
-      description: |
-        Full name of image to scan (example -- gcr.io/rox/sample:5.0-rc1)
     - name: output_format
       type: string
       description: Output format (json | csv | pretty)
