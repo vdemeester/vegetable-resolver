@@ -1,13 +1,15 @@
-# potato-resolver
+# vegetable resolvers
 
-An experimental tektoncd/pipeline resolver. The idea of this 🥔 is to
-experiment with what could be achieved with a Resolver.
+A set of experimental tektoncd/pipeline resolvers. The idea of this is
+to experiment with what could be achieved with a Resolver.
+
+## Potato 🥔 resolver
 
 The main idea explored here is how to generate a Pipeline Spec
 (embedded spec, or not) from a set of input, as well as, use "Task"
 type to inject different types of Task into a Pipeline.
 
-## Task type and injection
+### Task type and injection
 
 The idea behind *Task types* is more easily explained with an
 example. Let's assume we have a "general" `Pipeline` that is building
