@@ -1,4 +1,4 @@
-module github.com/vdemeester/potato-resolver
+module github.com/vdemeester/vegetable-resolver
 
 go 1.17
 

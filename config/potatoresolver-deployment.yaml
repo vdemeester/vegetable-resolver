@@ -28,7 +28,7 @@ spec:
       serviceAccountName: potato-resolver-controller
       containers:
       - name: controller
-        image: ko://github.com/vdemeester/potato-resolver/cmd/potatoresolver
+        image: ko://github.com/vdemeester/vegetable-resolver/cmd/resolver
         resources:
           requests:
             cpu: 100m

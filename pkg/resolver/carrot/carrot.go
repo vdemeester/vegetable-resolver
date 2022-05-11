@@ -1,17 +1,13 @@
-package potato
+package carrot
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 
 	"github.com/pkg/errors"
 	pipelinesclientset "github.com/tektoncd/pipeline/pkg/client/clientset/versioned"
 	pipelineclient "github.com/tektoncd/pipeline/pkg/client/injection/client"
 	"github.com/tektoncd/resolution/pkg/common"
 	"github.com/tektoncd/resolution/pkg/resolver/framework"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	// "knative.dev/pkg/logging"
 )
 
 const jsonContentType = "application/json"
@@ -48,53 +44,12 @@ func (r *resolver) GetSelector(context.Context) map[string]string {
 // ValidateParams ensures parameters from a request are as expected.
 // Only "kind" and "name" are needed.
 func (r *resolver) ValidateParams(ctx context.Context, params map[string]string) error {
-	if len(params) == 0 {
-		return errors.New(`require at least "pipeline" param`)
-	}
-	_, hasPipeline := params["pipeline"]
-	if !hasPipeline {
-		return errors.New(`require "pipeline" param`)
-	}
 	return nil
 }
 
 // Resolve uses the given params to resolve the requested file or resource.
 func (r *resolver) Resolve(ctx context.Context, params map[string]string) (framework.ResolvedResource, error) {
-	// logger := logging.FromContext(ctx)
-	pipeline := params["pipeline"]
-	namespace := common.RequestNamespace(ctx)
-	resolved, err := r.Pipelineclientset.TektonV1beta1().Pipelines(namespace).Get(ctx, pipeline, metav1.GetOptions{})
-	if err != nil {
-		return nil, errors.Wrapf(err, "error fetching pipeline %q", pipeline)
-	}
-	// FIXME: support dynamic contracts, …
-	builder, hasBuilder := params["builder"]
-	if !hasBuilder {
-		// Read the annotation
-		builder = resolved.Annotations["default.potato.tekton.dev/builder"]
-	}
-	// Manually add type meta because the kube api doesn't
-	// necessarily include them in its response.
-	out := resolved.DeepCopy()
-	out.TypeMeta.Kind = "Pipeline"
-	out.TypeMeta.APIVersion = "tekton.dev/v1beta1"
-
-	for i, t := range resolved.Spec.Tasks {
-		// FIXME: support dynamic contracts
-		if t.TaskRef != nil && t.TaskRef.Name == "potato.type.builder" {
-			nt := t.DeepCopy()
-			nt.TaskRef.Name = builder
-			out.Spec.Tasks[i] = *nt
-		}
-	}
-
-	data, err := json.Marshal(*out)
-	if err != nil {
-		return nil, fmt.Errorf("unable to marshal resolved resource to json: %w", err)
-	}
-	return &resolvedResource{
-		data: data,
-	}, nil
+	return nil, errors.New("Not implemented")
 }
 
 // resolvedResource wraps the data we want to return to Pipelines
