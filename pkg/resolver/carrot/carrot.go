@@ -37,7 +37,7 @@ func (r *resolver) GetName(context.Context) string {
 // GetSelector returns a map of labels to match requests to this resolver.
 func (r *resolver) GetSelector(context.Context) map[string]string {
 	return map[string]string{
-		common.LabelKeyResolverType: "potato",
+		common.LabelKeyResolverType: "carrot",
 	}
 }
 
