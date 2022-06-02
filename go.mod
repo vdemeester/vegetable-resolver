@@ -8,7 +8,7 @@ replace github.com/googleapis/gnostic v0.5.7-v3refs => github.com/google/gnostic
 
 require (
 	github.com/pkg/errors v0.9.1
-	github.com/tektoncd/pipeline v0.35.1
+	github.com/tektoncd/pipeline v0.36.0
 	github.com/tektoncd/resolution v0.0.0-20220410171535-52bc1f17d4b6
 	k8s.io/apimachinery v0.23.7
 	knative.dev/pkg v0.0.0-20220329144915-0a1ec2e0d46c
@@ -83,7 +83,7 @@ require (
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/api v0.23.5 // indirect
 	k8s.io/apiextensions-apiserver v0.23.4 // indirect
 	k8s.io/client-go v1.5.2 // indirect
