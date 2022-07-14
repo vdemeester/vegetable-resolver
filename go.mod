@@ -10,7 +10,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/tektoncd/pipeline v0.37.2
 	github.com/tektoncd/resolution v0.0.0-20220410171535-52bc1f17d4b6
-	k8s.io/apimachinery v0.23.8
+	k8s.io/apimachinery v0.23.9
 	knative.dev/pkg v0.0.0-20220329144915-0a1ec2e0d46c
 )
 
