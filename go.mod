@@ -8,7 +8,7 @@ replace github.com/googleapis/gnostic v0.5.7-v3refs => github.com/google/gnostic
 
 require (
 	github.com/pkg/errors v0.9.1
-	github.com/tektoncd/pipeline v0.37.2
+	github.com/tektoncd/pipeline v0.38.0
 	github.com/tektoncd/resolution v0.0.0-20220410171535-52bc1f17d4b6
 	k8s.io/apimachinery v0.23.9
 	knative.dev/pkg v0.0.0-20220329144915-0a1ec2e0d46c
@@ -37,13 +37,13 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/google/go-cmp v0.5.7 // indirect
+	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/google/go-containerregistry v0.8.1-0.20220216220642-00c59d91847c // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/googleapis/gnostic v0.5.5 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
-	github.com/hashicorp/errwrap v1.0.0 // indirect
+	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
