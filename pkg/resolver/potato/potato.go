@@ -8,8 +8,8 @@ import (
 	"github.com/pkg/errors"
 	pipelinesclientset "github.com/tektoncd/pipeline/pkg/client/clientset/versioned"
 	pipelineclient "github.com/tektoncd/pipeline/pkg/client/injection/client"
-	"github.com/tektoncd/resolution/pkg/common"
-	"github.com/tektoncd/resolution/pkg/resolver/framework"
+	"github.com/tektoncd/pipeline/pkg/resolution/common"
+	"github.com/tektoncd/pipeline/pkg/resolution/resolver/framework"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	// "knative.dev/pkg/logging"
 )

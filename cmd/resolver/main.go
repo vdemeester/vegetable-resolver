@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 
-	"github.com/tektoncd/resolution/pkg/resolver/framework"
+	"github.com/tektoncd/pipeline/pkg/resolution/resolver/framework"
 	"github.com/vdemeester/vegetable-resolver/pkg/resolver/carrot"
 	"github.com/vdemeester/vegetable-resolver/pkg/resolver/potato"
 	"knative.dev/pkg/injection/sharedmain"
