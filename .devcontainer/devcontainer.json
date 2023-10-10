@@ -1,0 +1,25 @@
+{
+    "name": "vegetable-resolvers-dev",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "customizations": {
+        "vscode": {
+            "settings": {
+              "go.toolsManagement.checkForUpdates": "local",
+              "go.useLanguageServer": true,
+              "go.gopath": "/go"
+            },
+            // Add IDs of extensions you want installed 
+            // when the container is created.
+            "extensions": [
+              "davidanson.vscode-markdownlint",
+              "dbaeumer.vscode-eslint",
+              "golang.Go",
+              "ms-azuretools.vscode-docker",
+              "ms-vscode.makefile-tools",
+              "redhat.vscode-yaml"
+            ]
+        }
+    }
+}
