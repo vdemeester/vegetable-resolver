@@ -24,9 +24,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/tektoncd/pipeline/pkg/apis/resolution/v1alpha1"
+	pipelinev1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
+	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+	"github.com/tektoncd/pipeline/pkg/apis/resolution/v1beta1"
 	rrclient "github.com/tektoncd/pipeline/pkg/client/resolution/clientset/versioned"
-	rrv1alpha1 "github.com/tektoncd/pipeline/pkg/client/resolution/listers/resolution/v1alpha1"
+	rrv1beta1 "github.com/tektoncd/pipeline/pkg/client/resolution/listers/resolution/v1beta1"
 	resolutioncommon "github.com/tektoncd/pipeline/pkg/resolution/common"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -51,7 +53,7 @@ type Reconciler struct {
 
 	resolver                   Resolver
 	kubeClientSet              kubernetes.Interface
-	resolutionRequestLister    rrv1alpha1.ResolutionRequestLister
+	resolutionRequestLister    rrv1beta1.ResolutionRequestLister
 	resolutionRequestClientSet rrclient.Interface
 
 	configStore *ConfigStore
@@ -75,13 +77,13 @@ const defaultMaximumResolutionDuration = time.Minute
 func (r *Reconciler) Reconcile(ctx context.Context, key string) error {
 	namespace, name, err := cache.SplitMetaNamespaceKey(key)
 	if err != nil {
-		err = &resolutioncommon.ErrorInvalidResourceKey{Key: key, Original: err}
+		err = &resolutioncommon.InvalidResourceKeyError{Key: key, Original: err}
 		return controller.NewPermanentError(err)
 	}
 
 	rr, err := r.resolutionRequestLister.ResolutionRequests(namespace).Get(name)
 	if err != nil {
-		err := &resolutioncommon.ErrorGettingResource{ResolverName: "resolutionrequest", Key: key, Original: err}
+		err := &resolutioncommon.GetResourceError{ResolverName: "resolutionrequest", Key: key, Original: err}
 		return controller.NewPermanentError(err)
 	}
 
@@ -93,6 +95,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, key string) error {
 	// the namespace that the request originates from and the
 	// configuration from the configmap this resolver is watching.
 	ctx = resolutioncommon.InjectRequestNamespace(ctx, namespace)
+	ctx = resolutioncommon.InjectRequestName(ctx, name)
 	if r.configStore != nil {
 		ctx = r.configStore.ToContext(ctx)
 	}
@@ -100,7 +103,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, key string) error {
 	return r.resolve(ctx, key, rr)
 }
 
-func (r *Reconciler) resolve(ctx context.Context, key string, rr *v1alpha1.ResolutionRequest) error {
+func (r *Reconciler) resolve(ctx context.Context, key string, rr *v1beta1.ResolutionRequest) error {
 	errChan := make(chan error)
 	resourceChan := make(chan ResolvedResource)
 
@@ -116,17 +119,17 @@ func (r *Reconciler) resolve(ctx context.Context, key string, rr *v1alpha1.Resol
 	defer cancelFn()
 
 	go func() {
-		validationError := r.resolver.ValidateParams(resolutionCtx, rr.Spec.Parameters)
+		validationError := r.resolver.ValidateParams(resolutionCtx, rr.Spec.Params)
 		if validationError != nil {
-			errChan <- &resolutioncommon.ErrorInvalidRequest{
+			errChan <- &resolutioncommon.InvalidRequestError{
 				ResolutionRequestKey: key,
 				Message:              validationError.Error(),
 			}
 			return
 		}
-		resource, resolveErr := r.resolver.Resolve(resolutionCtx, rr.Spec.Parameters)
+		resource, resolveErr := r.resolver.Resolve(resolutionCtx, rr.Spec.Params)
 		if resolveErr != nil {
-			errChan <- &resolutioncommon.ErrorGettingResource{
+			errChan <- &resolutioncommon.GetResourceError{
 				ResolverName: r.resolver.GetName(resolutionCtx),
 				Key:          key,
 				Original:     resolveErr,
@@ -154,7 +157,7 @@ func (r *Reconciler) resolve(ctx context.Context, key string, rr *v1alpha1.Resol
 
 // OnError is used to handle any situation where a ResolutionRequest has
 // reached a terminal situation that cannot be recovered from.
-func (r *Reconciler) OnError(ctx context.Context, rr *v1alpha1.ResolutionRequest, err error) error {
+func (r *Reconciler) OnError(ctx context.Context, rr *v1beta1.ResolutionRequest, err error) error {
 	if rr == nil {
 		return controller.NewPermanentError(err)
 	}
@@ -168,10 +171,10 @@ func (r *Reconciler) OnError(ctx context.Context, rr *v1alpha1.ResolutionRequest
 // MarkFailed updates a ResolutionRequest as having failed. It returns
 // errors that occur during the update process or nil if the update
 // appeared to succeed.
-func (r *Reconciler) MarkFailed(ctx context.Context, rr *v1alpha1.ResolutionRequest, resolutionErr error) error {
+func (r *Reconciler) MarkFailed(ctx context.Context, rr *v1beta1.ResolutionRequest, resolutionErr error) error {
 	key := fmt.Sprintf("%s/%s", rr.Namespace, rr.Name)
 	reason, resolutionErr := resolutioncommon.ReasonError(resolutionErr)
-	latestGeneration, err := r.resolutionRequestClientSet.ResolutionV1alpha1().ResolutionRequests(rr.Namespace).Get(ctx, rr.Name, metav1.GetOptions{})
+	latestGeneration, err := r.resolutionRequestClientSet.ResolutionV1beta1().ResolutionRequests(rr.Namespace).Get(ctx, rr.Name, metav1.GetOptions{})
 	if err != nil {
 		logging.FromContext(ctx).Warnf("error getting latest generation of resolutionrequest %q: %v", key, err)
 		return err
@@ -180,7 +183,7 @@ func (r *Reconciler) MarkFailed(ctx context.Context, rr *v1alpha1.ResolutionRequ
 		return nil
 	}
 	latestGeneration.Status.MarkFailed(reason, resolutionErr.Error())
-	_, err = r.resolutionRequestClientSet.ResolutionV1alpha1().ResolutionRequests(rr.Namespace).UpdateStatus(ctx, latestGeneration, metav1.UpdateOptions{})
+	_, err = r.resolutionRequestClientSet.ResolutionV1beta1().ResolutionRequests(rr.Namespace).UpdateStatus(ctx, latestGeneration, metav1.UpdateOptions{})
 	if err != nil {
 		logging.FromContext(ctx).Warnf("error marking resolutionrequest %q as failed: %v", key, err)
 		return err
@@ -192,27 +195,31 @@ func (r *Reconciler) MarkFailed(ctx context.Context, rr *v1alpha1.ResolutionRequ
 // a ResolutionRequest with its data and annotations once successfully
 // resolved.
 type statusDataPatch struct {
-	Annotations map[string]string `json:"annotations"`
-	Data        string            `json:"data"`
+	Annotations map[string]string             `json:"annotations"`
+	Data        string                        `json:"data"`
+	Source      *pipelinev1beta1.ConfigSource `json:"source"`
+	RefSource   *pipelinev1.RefSource         `json:"refSource"`
 }
 
-func (r *Reconciler) writeResolvedData(ctx context.Context, rr *v1alpha1.ResolutionRequest, resource ResolvedResource) error {
+func (r *Reconciler) writeResolvedData(ctx context.Context, rr *v1beta1.ResolutionRequest, resource ResolvedResource) error {
 	encodedData := base64.StdEncoding.Strict().EncodeToString(resource.Data())
 	patchBytes, err := json.Marshal(map[string]statusDataPatch{
 		"status": {
 			Data:        encodedData,
 			Annotations: resource.Annotations(),
+			RefSource:   resource.RefSource(),
+			Source:      (*pipelinev1beta1.ConfigSource)(resource.RefSource()),
 		},
 	})
 	if err != nil {
-		return r.OnError(ctx, rr, &resolutioncommon.ErrorUpdatingRequest{
+		return r.OnError(ctx, rr, &resolutioncommon.UpdatingRequestError{
 			ResolutionRequestKey: fmt.Sprintf("%s/%s", rr.Namespace, rr.Name),
 			Original:             fmt.Errorf("error serializing resource request patch: %w", err),
 		})
 	}
-	_, err = r.resolutionRequestClientSet.ResolutionV1alpha1().ResolutionRequests(rr.Namespace).Patch(ctx, rr.Name, types.MergePatchType, patchBytes, metav1.PatchOptions{}, "status")
+	_, err = r.resolutionRequestClientSet.ResolutionV1beta1().ResolutionRequests(rr.Namespace).Patch(ctx, rr.Name, types.MergePatchType, patchBytes, metav1.PatchOptions{}, "status")
 	if err != nil {
-		return r.OnError(ctx, rr, &resolutioncommon.ErrorUpdatingRequest{
+		return r.OnError(ctx, rr, &resolutioncommon.UpdatingRequestError{
 			ResolutionRequestKey: fmt.Sprintf("%s/%s", rr.Namespace, rr.Name),
 			Original:             err,
 		})

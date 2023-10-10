@@ -21,10 +21,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/tektoncd/pipeline/pkg/apis/resolution/v1alpha1"
+	"github.com/tektoncd/pipeline/pkg/apis/resolution/v1beta1"
 	rrclient "github.com/tektoncd/pipeline/pkg/client/resolution/injection/client"
-	rrinformer "github.com/tektoncd/pipeline/pkg/client/resolution/injection/informers/resolution/v1alpha1/resolutionrequest"
-	rrlister "github.com/tektoncd/pipeline/pkg/client/resolution/listers/resolution/v1alpha1"
+	rrinformer "github.com/tektoncd/pipeline/pkg/client/resolution/injection/informers/resolution/v1beta1/resolutionrequest"
+	rrlister "github.com/tektoncd/pipeline/pkg/client/resolution/listers/resolution/v1beta1"
 	"github.com/tektoncd/pipeline/pkg/resolution/common"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
@@ -81,7 +81,7 @@ func NewController(ctx context.Context, resolver Resolver, modifiers ...Reconcil
 			Logger:        logger,
 		})
 
-		rrInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
+		_, err := rrInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
 			FilterFunc: filterResolutionRequestsBySelector(resolver.GetSelector(ctx)),
 			Handler: cache.ResourceEventHandlerFuncs{
 				AddFunc: impl.Enqueue,
@@ -93,6 +93,9 @@ func NewController(ctx context.Context, resolver Resolver, modifiers ...Reconcil
 				// DeleteFunc: impl.Enqueue,
 			},
 		})
+		if err != nil {
+			logging.FromContext(ctx).Panicf("Couldn't register ResolutionRequest informer event handler: %w", err)
+		}
 
 		return impl
 	}
@@ -100,7 +103,7 @@ func NewController(ctx context.Context, resolver Resolver, modifiers ...Reconcil
 
 func filterResolutionRequestsBySelector(selector map[string]string) func(obj interface{}) bool {
 	return func(obj interface{}) bool {
-		rr, ok := obj.(*v1alpha1.ResolutionRequest)
+		rr, ok := obj.(*v1beta1.ResolutionRequest)
 		if !ok {
 			return false
 		}
@@ -142,17 +145,24 @@ func leaderAwareFuncs(lister rrlister.ResolutionRequestLister) reconciler.Leader
 	}
 }
 
-// ErrorMissingTypeSelector is returned when a resolver does not return
-// a selector with a type label from its GetSelector method.
-var ErrorMissingTypeSelector = fmt.Errorf("invalid resolver: minimum selector must include %q", common.LabelKeyResolverType)
+var (
+	// ErrMissingTypeSelector is returned when a resolver does not return
+	// a selector with a type label from its GetSelector method.
+	ErrMissingTypeSelector = fmt.Errorf("invalid resolver: minimum selector must include %q", common.LabelKeyResolverType)
+
+	// ErrorMissingTypeSelector is an alias to ErrMissingTypeSelector
+	//
+	// Deprecated: use ErrMissingTypeSelector instead.
+	ErrorMissingTypeSelector = ErrMissingTypeSelector
+)
 
 func validateResolver(ctx context.Context, r Resolver) error {
 	sel := r.GetSelector(ctx)
 	if sel == nil {
-		return ErrorMissingTypeSelector
+		return ErrMissingTypeSelector
 	}
 	if sel[common.LabelKeyResolverType] == "" {
-		return ErrorMissingTypeSelector
+		return ErrMissingTypeSelector
 	}
 	return nil
 }

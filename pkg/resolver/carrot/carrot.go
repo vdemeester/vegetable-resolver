@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
+	v1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 	pipelinesclientset "github.com/tektoncd/pipeline/pkg/client/clientset/versioned"
 	pipelineclient "github.com/tektoncd/pipeline/pkg/client/injection/client"
 	"github.com/tektoncd/pipeline/pkg/resolution/common"
@@ -43,12 +44,12 @@ func (r *resolver) GetSelector(context.Context) map[string]string {
 
 // ValidateParams ensures parameters from a request are as expected.
 // Only "kind" and "name" are needed.
-func (r *resolver) ValidateParams(ctx context.Context, params map[string]string) error {
+func (r *resolver) ValidateParams(ctx context.Context, params []v1.Param) error {
 	return nil
 }
 
 // Resolve uses the given params to resolve the requested file or resource.
-func (r *resolver) Resolve(ctx context.Context, params map[string]string) (framework.ResolvedResource, error) {
+func (r *resolver) Resolve(ctx context.Context, params []v1.Param) (framework.ResolvedResource, error) {
 	return nil, errors.New("Not implemented")
 }
 

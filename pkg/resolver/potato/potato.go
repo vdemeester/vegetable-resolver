@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
+	v1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 	pipelinesclientset "github.com/tektoncd/pipeline/pkg/client/clientset/versioned"
 	pipelineclient "github.com/tektoncd/pipeline/pkg/client/injection/client"
 	"github.com/tektoncd/pipeline/pkg/resolution/common"
@@ -47,11 +48,16 @@ func (r *resolver) GetSelector(context.Context) map[string]string {
 
 // ValidateParams ensures parameters from a request are as expected.
 // Only "kind" and "name" are needed.
-func (r *resolver) ValidateParams(ctx context.Context, params map[string]string) error {
+func (r *resolver) ValidateParams(ctx context.Context, params []v1.Param) error {
 	if len(params) == 0 {
 		return errors.New(`require at least "pipeline" param`)
 	}
-	_, hasPipeline := params["pipeline"]
+	hasPipeline := false
+	for _, p := range params {
+		if p.Name == "pipeline" {
+			hasPipeline = true
+		}
+	}
 	if !hasPipeline {
 		return errors.New(`require "pipeline" param`)
 	}
@@ -59,17 +65,25 @@ func (r *resolver) ValidateParams(ctx context.Context, params map[string]string)
 }
 
 // Resolve uses the given params to resolve the requested file or resource.
-func (r *resolver) Resolve(ctx context.Context, params map[string]string) (framework.ResolvedResource, error) {
+func (r *resolver) Resolve(ctx context.Context, params []v1.Param) (framework.ResolvedResource, error) {
 	// logger := logging.FromContext(ctx)
-	pipeline := params["pipeline"]
+	pipeline := ""
+	builder := ""
+	for _, p := range params {
+		if p.Name == "pipeline" {
+			pipeline = p.Value.StringVal
+		}
+		if p.Name == "builder" {
+			builder = p.Value.StringVal
+		}
+	}
 	namespace := common.RequestNamespace(ctx)
 	resolved, err := r.Pipelineclientset.TektonV1beta1().Pipelines(namespace).Get(ctx, pipeline, metav1.GetOptions{})
 	if err != nil {
 		return nil, errors.Wrapf(err, "error fetching pipeline %q", pipeline)
 	}
 	// FIXME: support dynamic contracts, …
-	builder, hasBuilder := params["builder"]
-	if !hasBuilder {
+	if builder != "" {
 		// Read the annotation
 		builder = resolved.Annotations["default.potato.tekton.dev/builder"]
 	}
@@ -94,12 +108,16 @@ func (r *resolver) Resolve(ctx context.Context, params map[string]string) (frame
 	}
 	return &resolvedResource{
 		data: data,
+		source: &v1.RefSource{
+			URI: "potato://foo-is-bar",
+		},
 	}, nil
 }
 
 // resolvedResource wraps the data we want to return to Pipelines
 type resolvedResource struct {
-	data []byte
+	data   []byte
+	source *v1.RefSource
 }
 
 // Data returns the bytes of the task or pipeline resolved from the
@@ -114,4 +132,8 @@ func (r *resolvedResource) Annotations() map[string]string {
 	return map[string]string{
 		common.AnnotationKeyContentType: jsonContentType,
 	}
+}
+
+func (r *resolvedResource) RefSource() *v1.RefSource {
+	return r.source
 }
