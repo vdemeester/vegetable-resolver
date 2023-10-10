@@ -18,8 +18,14 @@
               "golang.Go",
               "ms-azuretools.vscode-docker",
               "ms-vscode.makefile-tools",
-              "redhat.vscode-yaml"
+              "redhat.vscode-yaml",
+              "eamodio.gitlens"
             ]
         }
+    },
+    "features": {
+      // connect to Docker Engine running on the host machine
+      "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+      // alternatively you can also run Docker-in-Docker
     }
 }

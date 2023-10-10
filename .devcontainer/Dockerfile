@@ -14,6 +14,10 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
         vim \
         make \
         ;
+ARG KO_VERSION=0.14.1
+RUN ARCH=$(uname -m) OS=$(uname) && \
+    wget -O ko.tar.gz https://github.com/ko-build/ko/releases/download/v${KO_VERSION}/ko_${KO_VERSION}_${OS}_${ARCH}.tar.gz && \
+    tar xvzf ko.tar.gz -C /usr/local/bin
 
 # [Optional] Uncomment the next lines
 # to use go get to install anything else you need
