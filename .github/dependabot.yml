@@ -14,9 +14,7 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-      # Disable all pull requests for Docker dependencies
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
-    open-pull-requests-limit: 0
+      interval: "weekly"
