@@ -11,6 +11,7 @@ contents:
     - go
     - ko
     - docker
+    - kind
 
 accounts:
   groups:
