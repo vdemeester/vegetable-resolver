@@ -9,6 +9,7 @@ contents:
     - bash
     - zsh
     - go
+    - git
     - ko
     - docker
     - kind
