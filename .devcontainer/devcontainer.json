@@ -1,9 +1,9 @@
 {
     "name": "vegetable-resolvers-dev",
-    // "image": "ghcr.io/vdemeester/test/vegetable-resolver",
-    "build": {
-        "dockerfile": "Dockerfile"
-    },
+    "image": "ghcr.io/vdemeester/test/vegetable-container",
+    // "build": {
+    //     "dockerfile": "Dockerfile"
+    // },
     "customizations": {
         "vscode": {
             "settings": {
@@ -25,11 +25,11 @@
         }
     },
     "features": {
-      "ghcr.io/devcontainers/features/node:1": {
-        "version": "latest"
-      },
+      // "ghcr.io/devcontainers/features/node:1": {
+      //   "version": "latest"
+      // },
       // connect to Docker Engine running on the host machine
-      "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+      // "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
       // alternatively you can also run Docker-in-Docker
     }
 }
