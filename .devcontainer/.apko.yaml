@@ -6,6 +6,8 @@ contents:
   packages:
     - alpine-base
     - build-base
+    - bash
+    - zsh
     - go
     - ko
 
