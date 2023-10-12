@@ -15,6 +15,7 @@ contents:
     - kind
     - gopls
     - apko
+    - github-cli
 
 accounts:
   groups:
