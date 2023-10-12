@@ -1,6 +1,6 @@
 {
     "name": "vegetable-resolvers-dev",
-    "image": "ghcr.io/vdemeester/test/vegetable-container",
+    "image": "ghcr.io/vdemeester/vegetable-resolver/devspace:latest",
     // "build": {
     //     "dockerfile": "Dockerfile"
     // },
