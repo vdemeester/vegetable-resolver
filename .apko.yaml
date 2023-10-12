@@ -13,6 +13,7 @@ contents:
     - ko
     - docker
     - kind
+    - gopls
 
 accounts:
   groups:
