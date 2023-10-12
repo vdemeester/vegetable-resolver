@@ -16,6 +16,7 @@ contents:
     - gopls
     - apko
     - github-cli
+    - gnupg
 
 accounts:
   groups:
