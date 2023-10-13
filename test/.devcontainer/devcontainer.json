@@ -22,6 +22,7 @@
         }
     },
     "features": {
+      "ghcr.io/devcontainers/features/sshd:1": {}
       // connect to Docker Engine running on the host machine
       // "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
       // alternatively you can also run Docker-in-Docker
