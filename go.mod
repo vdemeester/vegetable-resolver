@@ -15,7 +15,7 @@ replace (
 
 require (
 	github.com/pkg/errors v0.9.1
-	github.com/tektoncd/pipeline v0.52.0
+	github.com/tektoncd/pipeline v0.52.1
 	k8s.io/apimachinery v0.27.3
 	knative.dev/pkg v0.0.0-20230718152110-aef227e72ead
 )
