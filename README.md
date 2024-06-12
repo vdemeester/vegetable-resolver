@@ -5,6 +5,7 @@ to experiment with what could be achieved with a Resolver.
 
 ## Potato 🥔 resolver
 
+
 The main idea explored here is how to generate a Pipeline Spec
 (embedded spec, or not) from a set of input, as well as, use "Task"
 type to inject different types of Task into a Pipeline.

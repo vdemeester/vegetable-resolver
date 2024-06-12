@@ -1,6 +1,6 @@
 module github.com/vdemeester/vegetable-resolver
 
-go 1.20
+go 1.22
 
 // replace k8s.io/client-go v1.5.2 => k8s.io/client-go v0.23.5
 

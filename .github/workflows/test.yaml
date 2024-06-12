@@ -16,7 +16,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: 1.20.x
+        go-version: 1.22.x
     - uses: actions/cache@v4
       with:
         path: |
@@ -32,6 +32,15 @@ jobs:
       run: go test -v ./...
 
   e2e:
+    strategy:
+      fail-fast: false # Keep running if one leg fails.
+      matrix:
+        pipeline-version:
+        - v0.50.6
+        - v0.53.7
+        - v0.56.5
+        - v0.59.1
+        - latest
     name: e2e tests
     runs-on: ubuntu-latest
     needs: [ build ]
@@ -39,7 +48,7 @@ jobs:
     steps:
     - uses: actions/setup-go@v5
       with:
-        go-version: 1.20.x
+        go-version: 1.22.x
     - uses: ko-build/setup-ko@v0.6
     - uses: actions/checkout@v4
     - uses: actions/cache@v4
@@ -49,13 +58,19 @@ jobs:
           ~/go/pkg/mod
         key: ${{ runner.os }}-golang-${{ hashFiles('**/go.sum') }}
         restore-keys: |
-          ${{ runner.os }}-golang-
-    - uses: chainguard-dev/actions/setup-kind@main
+          ${{ runner.os }}-golang-      
+    # instantiate a KinD (Kubernetes in Docker) cluster, installs `kubectl` and configures the
+    # `kubeconfig` to reach the local cluster
+    - uses: helm/kind-action@v1.10.0
       with:
-        k8s-version: v1.23.x
-    - uses: vdemeester/setup-tektoncd@main
+        cluster_name: kind
+        wait: 120s
+
+    # installs Tekton Pipelines and `tkn` command line, including a local Container-Registry with
+    # settings to reach it during testing
+    - uses: openshift-pipelines/setup-tektoncd@v1
       with:
-        pipeline: v0.40.x
+        pipeline_version: ${{ matrix.pipeline-version }}
         pipeline-feature-flags: '{"enable-api-fields": "alpha"}'
     - name: install manual-approval-gate custom task
       run: |
@@ -76,7 +91,7 @@ jobs:
     steps:
     - uses: actions/setup-go@v5
       with:
-        go-version: 1.20.x
+        go-version: 1.22.x
     - uses: actions/checkout@v4
     - uses: actions/cache@v4
       with:
